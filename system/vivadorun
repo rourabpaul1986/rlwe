@@ -1,0 +1,14 @@
+child="child"
+project="parent"
+pynq_proj="dma_test"
+source /opt/Xilinx/Vivado/2018.1/settings64.sh #vivado path
+#!/bin/bash
+
+vivado -nolog -nojournal -notrace -mode batch -source script.tcl
+#vivado -nolog -nojournal -notrace -mode gui -source script.tcl
+
+echo "return code $?"
+echo "Sucessfule but file generated"
+#rm $PWD/$project/$child".srcs/sources_1/bd/design_1/hw_handoff/design_1_wrapper.hwh";
+mv $PWD/$project/$child".srcs/sources_1/bd/design_1/hw_handoff/design_1.hwh" $PWD/$project/$child".srcs/sources_1/bd/design_1/hw_handoff/design_1_wrapper.hwh";
+scp $PWD/$project/$child".runs/impl_1/design_1_wrapper.bit"  $PWD/$project/$child".srcs/sources_1/bd/design_1/hw_handoff/design_1_wrapper.hwh" xilinx@172.17.104.100:/home/xilinx/jupyter_notebooks/$pynq_proj;
