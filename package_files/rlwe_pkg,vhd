@@ -1,0 +1,37 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use ieee.math_real.all;
+package rlwe_pkg is
+
+   constant n  : integer := 2**4;
+   constant q  : natural := 2**15;
+   constant t  : natural := 2**8;
+   constant base_addr_sk  : natural := 0;
+   constant base_addr_a  : natural := base_addr_sk+n;
+   constant logq : positive := positive(ceil(log2(real(q))));
+   constant logn : positive := positive(ceil(log2(real(n))));
+   constant init_key:   std_logic_vector(79 downto 0):=x"01234567890123456789";
+   constant init_iv:    std_logic_vector(79 downto 0):=x"01234567890123456789";
+   constant zero_n_2:    std_logic_vector(n-2 downto 0):=(others=>'0');
+   constant poly_mod:    std_logic_vector(n downto 0):='1' & zero_n_2 & '1';
+   constant Ainit_key:   std_logic_vector(79 downto 0):=x"11234567890123456789";
+   constant Ainit_iv:    std_logic_vector(79 downto 0):=x"11234567890123456789";
+   
+   type a_type is array (0 to (n-1)) of std_logic_vector(n-1 downto 0);
+
+   type a_sk_type is array (0 to (n-1), 0 to (n-1)) of std_logic_vector(n-1 downto 0);
+   type p_type is array ( 0 to (2*n-2)) of std_logic_vector(2*n+n downto 0);
+   type p_trun_type is array ( 0 to (2*n-3)) of std_logic_vector(logq-1 downto 0);
+   
+-- Total number of output data
+constant NUMBER_OF_OUTPUT_WORDS : natural := 8;
+constant s_box_length : positive:=256;
+constant secret_key_length : positive:=16;
+constant ascii_width: positive:=8;
+constant block_size : positive:=128;
+type s_box is array (0 to (s_box_length-1)) of std_logic_vector((ascii_width-1) downto 0);
+type key is array (0 to (secret_key_length-1)) of std_logic_vector((ascii_width-1) downto 0);
+
+end rlwe_pkg; 
