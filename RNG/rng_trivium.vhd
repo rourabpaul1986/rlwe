@@ -5,7 +5,8 @@
 -- Modifier : Dr. Rourab Paul, Siksha O Anusandhan
 
 -- Description :  The initial code was designed by Joris van Rantwijk. Dr. Rourab Paul added controlling signals to store generated random numbers to memory 
---  See <https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>
+--  This block is required to generate the secret key polynomial
+--See <https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>
 --
 
 library ieee;
