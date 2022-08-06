@@ -80,9 +80,9 @@ component mem_ctrl_dmux is
 dmux_dw:   integer range 1 to 64
 );
 Port ( 
-      I : in  STD_LOGIC_VECTOR (n-1 downto 0); 
+      I : in  STD_LOGIC_VECTOR (dmux_dw-1 downto 0); 
        S : in STD_LOGIC_VECTOR (1 downto 0);
-       Y1, Y2, Y3, Y4 : out STD_LOGIC_VECTOR (n-1 downto 0));
+       Y1, Y2, Y3, Y4 : out STD_LOGIC_VECTOR (dmux_dw-1 downto 0));
 
 end component;
 ----------------------------------------------------------------
@@ -92,8 +92,8 @@ port(
  we   : in  std_logic;
  en   : in  std_logic;
  addr : in  std_logic_vector(7 downto 0);
- di   : in  std_logic_vector(n-1 downto 0);
- do   : out std_logic_vector(n-1 downto 0)
+ di   : in  std_logic_vector(logq-1 downto 0);
+ do   : out std_logic_vector(logq-1 downto 0)
 
 );
 end component;
@@ -101,11 +101,11 @@ end component;
 component poly_mul is
     Port ( clk : in STD_LOGIC;
            rst : in STD_LOGIC;
-           mult_in: in std_logic_vector(n-1 downto 0);
+           mult_in: in std_logic_vector(logq-1 downto 0);
            mem_ctrl:  out  std_logic_vector(1 downto 0);
            sdmux :  out std_logic_vector(1 downto 0);
            addr :  out std_logic_vector(7 downto 0);
-           mult_out: out std_logic_vector(n-1 downto 0);
+           mult_out: out mult_type;
            read_mem: out std_logic;
            done : out STD_LOGIC);
 end component;
@@ -136,19 +136,20 @@ end component;
  signal reseed        : std_logic:='0';
  signal newkey:   std_logic_vector(79 downto 0);
  signal newiv:  std_logic_vector(79 downto 0);
- signal sk_n:  std_logic_vector(n-1 downto 0);
+ signal sk_n:  std_logic_vector(logq-1 downto 0);
  signal sk_1:  std_logic_vector(0 downto 0);
- signal zero:  std_logic_vector(n-2 downto 0):=(others=>'0');
+ signal zero:  std_logic_vector(logq-2 downto 0):=(others=>'0');
  -------------------------------------------------------------
  signal SMUX, SDMUX, sdmux_mult, SAddrMUX, smux_sk, smux_a:  std_logic_vector(1 downto 0);
- signal B,C,D,Y1,Y2,Y3,Y4, mult_in:  std_logic_vector(n-1 downto 0);
- signal mux_out,dmux_in:  std_logic_vector(n-1 downto 0);
+ signal B,C,D,Y1,Y2,Y3,Y4, mult_in:  std_logic_vector(logq-1 downto 0);
+ signal mux_out,dmux_in:  std_logic_vector(logq-1 downto 0);
  -------------------------------------------------
  signal we, mem_en, a_en:  std_logic;
  signal counter : integer range 0 to 255;
  signal do:  std_logic_vector(n-1 downto 0);
  signal addr :  std_logic_vector(7 downto 0);
- signal a_pol, mult_out :  std_logic_vector(n-1 downto 0);
+ signal mult_out :  mult_type;
+ signal a_pol :  std_logic_vector(logq-1 downto 0);
  signal sk_nAddr, a_Addr, CAddr, DAddr, mult_addr :  std_logic_vector(7 downto 0);
  signal a_gen_done, sk_done, rst_a, rst_mul, read_mem_mul         : std_logic:='0';
 ---------------memory control signals-----------------------------------------------------------
@@ -184,7 +185,7 @@ SDMUX<=sdmux_mult  when read_mem_mul='1';
 
 --------------------------------------
 mux_cntrl : mem_ctrl_mux --data---
-   generic map (mux_dw=> n)
+   generic map (mux_dw=> logq)
 port map ( A=>sk_n, B=>a_pol, C=>C, D=>D, S=>SMUX, Z=>mux_out );
 ---------------------------------------------
 --------------------------------------
@@ -199,7 +200,7 @@ port map ( A=>sk_mem_ctrl, B=>a_mem_ctrl, C=>mul_mem_ctrl, D=>d_mem_ctrl, S=>SMU
 ---------------------------------------------
 ----------------------------------------
 dmux_data : mem_ctrl_dmux --data--
-generic map (dmux_dw=>n)
+generic map (dmux_dw=>logq)
 port map ( I =>dmux_in, S => SDMUX ,Y1=> Y3 ,Y2=> Y2, Y3=>mult_in,Y4=>Y4);
 -----------------------------------------------
 ----------------------------------------
@@ -220,7 +221,7 @@ port map (
 ---------------------------------------------
 rng_a : rng_trivium_a 
     generic map (
-    num_bits=> n,
+    num_bits=> logq,
     init_key=>Ainit_key,
     init_iv=>Ainit_iv
   )
@@ -269,5 +270,4 @@ if rising_edge(clk) then
     end if;
 end if;
 end process;
-
 end rlwe_top_arch;
