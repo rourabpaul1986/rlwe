@@ -1,3 +1,22 @@
+----------------------------------------------------------------------------------
+-- Company: Siksa O Anusandhan
+-- Engineer: Dr. Rourab paul
+-- 
+-- Create Date: 22.07.2022 10:21:30
+-- Design Name: 
+-- Module Name: mem_ctrl_demux
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: This mux generate control signals required fot writing operation to memory 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
  use work.rlwe_pkg.all;
