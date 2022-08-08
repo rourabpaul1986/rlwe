@@ -34,24 +34,40 @@ use work.rlwe_pkg.all;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity poly_mul is
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
+use work.rlwe_pkg.all;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity poly_div is
     Port ( clk : in STD_LOGIC;
            rst : in STD_LOGIC;
-           mult_in: in std_logic_vector(n-1 downto 0);
+           mult_in: in std_logic_vector(logq-1 downto 0);
            mem_ctrl:  out  std_logic_vector(1 downto 0);
            sdmux :  out std_logic_vector(1 downto 0);
            addr :  out std_logic_vector(7 downto 0);
-           mult_out: out std_logic_vector(n-1 downto 0);
+           mult_out: out mult_type;
            read_mem: out std_logic;
            done : out STD_LOGIC);
-end poly_mul;
+end poly_div;
 
-architecture Behavioral of poly_mul is
-signal a,b:  std_logic_vector(n-1 downto 0);
+architecture Behavioral of poly_div is
+signal a,b:  std_logic_vector(logq-1 downto 0);
 signal zero_poly_mod:  std_logic_vector(logq-2 downto 0);
 signal padded_poly_mod:  std_logic_vector(logq-1 downto 0);
 signal product : p_type;
-signal mul_start, read_mem_reg, mult_done :  std_logic;
+signal mul_start, read_mem_reg, mult_done, div_done :  std_logic;
 signal addr_reg :  std_logic_vector(7 downto 0);
 signal p :  p_type;--elements in higher index of th p is lower degree of the polynomial 
 signal p_trun, p_trun_reg :  p_trun_type;
@@ -143,7 +159,7 @@ if rising_edge(clk) then
 end if;
 end process;
 --------------------------------------
-process(clk)--polynomial multiplication
+process(clk)--multiplication process
 begin
 if rising_edge(clk) then
     if(rst='1') then
@@ -189,12 +205,13 @@ end process;
 --   end generate  truncate_final_loop;
 ------------------------------------------
 ----------------------------------------
-process(clk, u ,v)--polynomial division
+process(clk, u ,v)--a stroing processs
 begin
 if rising_edge(clk) then
     if(rst='1') then
      div_state<=idle;
      u<=0;v<=0;
+     div_done<='0';
     elsif(mult_done='1') then
      case div_state is
      
@@ -237,11 +254,17 @@ if rising_edge(clk) then
          end  if;
          
         when divfin=>
+          div_done<='1';
           div_state<=divfin;
          
      end case;
     end if;
 end if;
 end process;
-   
+
+  output_loop : for I in n-2 to 2*n-3 generate
+   mult_out(I-(n-2))<=p_trun_reg(I);
+   end generate  output_loop;
+
+done<=div_done;   
 end Behavioral;
