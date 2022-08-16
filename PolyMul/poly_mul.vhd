@@ -19,8 +19,6 @@
 ----------------------------------------------------------------------------------
 
 
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.std_logic_unsigned.all;
@@ -37,11 +35,16 @@ use work.rlwe_pkg.all;
 --use UNISIM.VComponents.all;
 
 entity poly_mul is
+    generic (
+    base_addr_multiplicand:   natural range 0 to 255;
+    base_addr_multipyer:   natural range 0 to 255
+
+    );
     Port ( clk : in STD_LOGIC;
            rst : in STD_LOGIC;
            mult_in: in std_logic_vector(logq-1 downto 0);
            mem_ctrl:  out  std_logic_vector(1 downto 0);
-           sdmux :  out std_logic_vector(1 downto 0);
+           sdmux :  out std_logic_vector(2 downto 0);
            addr :  out std_logic_vector(7 downto 0);
            mult_out: out mult_type;
            read_mem: out std_logic;
@@ -76,16 +79,16 @@ begin
 if rising_edge(clk) then
     if(rst='1') then
      addr_reg<=(others=>'0');
-     i<=base_addr_sk; j<=base_addr_a;
+     i<=base_addr_multipyer; j<=base_addr_multiplicand;
      state<=inrN;
      read_mem_reg<='0';
-     sdmux<="00";
+     sdmux<="000";
      mem_ctrl<="00";
     else
        case state is
              when inrN =>  
               mem_ctrl<="10";
-              sdmux<="10";
+              sdmux<="010";
               read_mem_reg<='1';            
                addr_reg<=std_logic_vector(to_unsigned(i, 8));  
                state<=inr1;    
@@ -249,7 +252,7 @@ end if;
 end process;
 
   output_loop : for I in n-2 to 2*n-3 generate
-   mult_out(I-(n-2))<=p_trun_reg(I);
+   mult_out(I-(n-2))<=p_trun_reg(I)(logq -1 downto 0);
    end generate  output_loop;
 
 done<=div_done;   
