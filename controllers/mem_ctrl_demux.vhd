@@ -17,6 +17,7 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
+
 library ieee;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
@@ -28,8 +29,8 @@ entity mem_ctrl_dmux is
 dmux_dw:   integer range 1 to 64
 );
 Port ( I : in  STD_LOGIC_VECTOR (dmux_dw-1 downto 0); 
-       S : in STD_LOGIC_VECTOR (1 downto 0);
-       Y1, Y2, Y3, Y4 : out STD_LOGIC_VECTOR (dmux_dw-1 downto 0));
+       S : in STD_LOGIC_VECTOR (2 downto 0);
+       Y0, Y1, Y2, Y3, Y4, Y5, Y6, Y7 : out STD_LOGIC_VECTOR (dmux_dw-1 downto 0));
 
 end mem_ctrl_dmux;
 
@@ -39,21 +40,22 @@ process (I, S)
 
 begin
 
-if (S <= "00") then
-
-Y1 <= I ;
-
-elsif (S <= "01") then
-
-Y2 <= I ;
-
-elsif (S <= "10") then
-
-Y3 <= I ;
-
-else
-
-Y4 <= I ;
+if (S <= "000") then
+ Y0 <= I ;
+elsif (S <= "001") then
+ Y1 <= I ;
+elsif (S <= "010") then
+ Y2 <= I ;
+elsif (S <= "011") then
+  Y3 <= I ;
+ elsif (S <= "100") then
+  Y4 <= I ;
+ elsif (S <= "101") then
+   Y5 <= I ;
+ elsif (S <= "110") then
+    Y6 <= I ;
+ else
+  Y7 <= I ;
 end if;
 
 end process;
