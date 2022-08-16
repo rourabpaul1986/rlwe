@@ -17,6 +17,7 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
  use work.rlwe_pkg.all;
@@ -25,24 +26,32 @@ entity mem_ctrl_mux is
     mux_dw:   integer range 1 to 64
  );
  port( 
-     A,B,C,D : in STD_LOGIC_vector(mux_dw-1 downto 0);
-     S: in STD_LOGIC_vector(1 downto 0);
-     Z: out STD_LOGIC_vector(mux_dw-1 downto 0)
+     I0,I1,I2,I3,I4,I5,I6,I7 : in STD_LOGIC_vector(mux_dw-1 downto 0);
+     S: in STD_LOGIC_vector(2 downto 0);
+     O: out STD_LOGIC_vector(mux_dw-1 downto 0)
   );
 end mem_ctrl_mux;
  
 architecture bhv of mem_ctrl_mux is
 begin
-process (A,B,C,D,S) is
+process (I0,I1,I2,I3,I4,I5,I6,I7, S) is
 begin
-  if (S ="00") then
-      Z <= A;
-  elsif (S="01") then
-      Z <= B;
-  elsif (S ="10") then
-      Z <= C;
+  if (S ="000") then
+      O <= I0;
+  elsif (S="001") then
+      O <= I1;
+  elsif (S ="010") then
+      O <= I2;
+  elsif (S="011") then
+       O <= I3;
+  elsif (S ="100") then
+       O <= I4;
+   elsif (S ="101") then
+        O <= I5;
+   elsif (S="110") then
+       O <= I6;
   else
-      Z <= D;
+      O <= I7;
   end if;
  
 end process;
