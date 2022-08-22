@@ -8,3 +8,5 @@ The Specification of RLWE Homomorphic is
    constant q  : natural := 2**15; = width of coeffcient 
    
    constant t  : natural := 2**8; = plaintext modulus
+   
+   Copyright (c) 2022, Rourab Paul. All rights reserved.
