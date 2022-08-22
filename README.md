@@ -11,5 +11,5 @@ The Specification of RLWE Homomorphic is
    
    Copyright (c) 2022, Rourab Paul. All rights reserved.
    
-   The initial developer of this source code is Sujoy Sinha Roy, KU Leuven.
+   The initial developer of this source code is Rourab Paul.
 Contact rourabpaul@gmail.com be for comments & questions.
