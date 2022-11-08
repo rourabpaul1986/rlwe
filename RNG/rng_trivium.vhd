@@ -53,7 +53,7 @@ entity rng_trivium_sk is
         -- This signal is low during the first (1152/num_bits) clock cycles
         -- after reset and after re-seeding, and high in all other cases.
         mem_ctrl:  out  std_logic_vector(1 downto 0);
-        smux:  out  std_logic_vector(1 downto 0);
+        smux:  out  std_logic_vector(2 downto 0);
         addr:  out  std_logic_vector(7 downto 0);
         out_valid:  out std_logic;
 
