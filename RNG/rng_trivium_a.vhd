@@ -54,7 +54,7 @@ entity rng_trivium_a is
         -- This signal is low during the first (1152/num_bits) clock cycles
         -- after reset and after re-seeding, and high in all other cases.
         mem_ctrl:  out  std_logic_vector(1 downto 0);
-        smux:  out  std_logic_vector(1 downto 0);
+        smux:  out  std_logic_vector(2 downto 0);
         addr:  out  std_logic_vector(7 downto 0);
         out_valid:  out std_logic;
 
@@ -111,7 +111,7 @@ architecture trivium_arch of rng_trivium_a is
     -- Output register.
     signal reg_valid, op_valid:       std_logic := '0';
     signal reg_output:      std_logic_vector(num_bits-1 downto 0);
-    signal addr_reg:    std_logic_vector(7 downto 0):= std_logic_vector(to_unsigned(base_addr_a, 8));
+    signal addr_reg:    std_logic_vector(7 downto 0);
 
 begin
 
@@ -188,7 +188,7 @@ begin
                 reg_valid       <= '0';
                 op_valid       <= '0';
                 smux<=(others => '0');
-                addr_reg<= std_logic_vector(to_unsigned(base_addr_a, 8));
+                addr_reg<= std_logic_vector(to_unsigned(base_addr_a+n+1, 8));
                 reg_valid_wait  <= (others => '0');
                 reg_state       <= make_initial_state(init_key, init_iv);
                 reg_output      <= (others => '0');
@@ -196,13 +196,15 @@ begin
             
             
             if (reg_valid='1') then
-             if(addr_reg < base_addr_e2+n) then
+             --if(addr_reg < base_addr_e2+n) then
+             if(addr_reg > base_addr_a+1) then
                 op_valid       <= '1';
                 mem_ctrl<="11";
-                smux<="01";
-                addr_reg<=addr_reg+1;
+                smux<="001";
+                addr_reg<=addr_reg-1;
              else
-                addr_reg<=std_logic_vector(to_unsigned(base_addr_e2+n, 8));
+                --addr_reg<=std_logic_vector(to_unsigned(base_addr_e2+n, 8));
+                addr_reg<=std_logic_vector(to_unsigned(base_addr_a, 8));
                 mem_ctrl<="00";
                 op_valid       <= '0';
              end if;
