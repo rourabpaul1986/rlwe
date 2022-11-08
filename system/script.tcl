@@ -1,6 +1,6 @@
-#/opt/Xilinx/Vivado/2018.1/data/boards/board_files-- pynq board support package should be stored here
+#/opt/Xilinx/Vivado/2018.1/data/boards/board_files
 
-set path_custome_IP "/home/rourab/FPGA/pynq/ip_repo"; #location of the RLWE hardware accelerator
+set path_custome_IP "/home/rourab/FPGA/pynq/ip_repo"; #location of the custome IPs
 set {variable child} child
 set {variable project} parent
 set path [file tail [pwd]]
@@ -35,7 +35,7 @@ set_property  ip_repo_paths  $path_custome_IP [current_project]
 update_ip_catalog
 ############################add custome IP######################################
 startgroup
-create_bd_cell -type ip -vlnv user.org:user:axi_stream_generator:1.0 axi_stream_generator_0
+create_bd_cell -type ip -vlnv rourab.com:user:rlwe:1.0 rlwe_0
 endgroup
 ###################################add Axi interconnect
 startgroup
@@ -71,12 +71,12 @@ connect_bd_net [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins rst_ps7
 connect_bd_net [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
 connect_bd_net [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
 #############################axi stream custome connections
-connect_bd_intf_net [get_bd_intf_pins axi_stream_generator_0/M_AXIS] [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM]
-connect_bd_intf_net [get_bd_intf_pins axi_stream_generator_0/S_AXIS] [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S]
-connect_bd_net [get_bd_pins axi_stream_generator_0/m_axis_aresetn] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
-connect_bd_net [get_bd_pins axi_stream_generator_0/s_axis_aresetn] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
-connect_bd_net [get_bd_pins axi_stream_generator_0/s_axis_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0]
-connect_bd_net [get_bd_pins axi_stream_generator_0/m_axis_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0]
+connect_bd_intf_net [get_bd_intf_pins rlwe_0/M_AXIS] [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM]
+connect_bd_intf_net [get_bd_intf_pins rlwe_0/S_AXIS] [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S]
+connect_bd_net [get_bd_pins rlwe_0/m_axis_aresetn] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
+connect_bd_net [get_bd_pins rlwe_0/s_axis_aresetn] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
+connect_bd_net [get_bd_pins rlwe_0/s_axis_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0]
+connect_bd_net [get_bd_pins rlwe_0/m_axis_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0]
 ###########################################################################################################
 set_property -dict [list CONFIG.PCW_USE_S_AXI_HP0 {1} CONFIG.PCW_USE_S_AXI_HP1 {1}] [get_bd_cells processing_system7_0]
 connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_interconnect_1/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_HP1]
