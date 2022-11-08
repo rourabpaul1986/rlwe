@@ -1,5 +1,5 @@
-child="child"
-project="parent"
+child="child"     #sub folder name under main folder
+project="parent" #main project folder name
 pynq_proj="dma_test"
 source /opt/Xilinx/Vivado/2018.1/settings64.sh #vivado path
 #!/bin/bash
