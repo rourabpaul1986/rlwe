@@ -19,30 +19,19 @@
 ----------------------------------------------------------------------------------
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use ieee.std_logic_unsigned.all;
-use ieee.numeric_std.all;
-use work.rlwe_pkg.all;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity poly_mul is
-    generic (
-    base_addr_multiplicand:   natural range 0 to 255;
-    base_addr_multipyer:   natural range 0 to 255
+--    generic (
+--    base_addr_multiplicand:   natural range 0 to 255;
+--    base_addr_multipyer:   natural range 0 to 255
 
-    );
-    Port ( clk : in STD_LOGIC;
+--    );
+    Port ( 
+           base_addr_multiplicand: in  natural range 0 to 255;
+           base_addr_multipyer: in  natural range 0 to 255;
+           clk : in STD_LOGIC;
            rst : in STD_LOGIC;
            mult_in: in std_logic_vector(logq-1 downto 0);
+           mode: in std_logic_vector(1 downto 0);
            mem_ctrl:  out  std_logic_vector(1 downto 0);
            sdmux :  out std_logic_vector(2 downto 0);
            addr :  out std_logic_vector(7 downto 0);
@@ -52,25 +41,27 @@ entity poly_mul is
 end poly_mul;
 
 architecture Behavioral of poly_mul is
+signal not_mult_in:  std_logic_vector(logq-1 downto 0);
 signal a,b:  std_logic_vector(logq-1 downto 0);
 signal zero_poly_mod:  std_logic_vector(logq-2 downto 0);
 signal padded_poly_mod:  std_logic_vector(logq-1 downto 0);
 signal product : p_type;
 signal mul_start, read_mem_reg, mult_done, div_done :  std_logic;
 signal addr_reg :  std_logic_vector(7 downto 0);
-signal p :  p_type;--elements in higher index of th p is lower degree of the polynomial 
+signal p, not_p :  p_type;--elements in higher index of th p is lower degree of the polynomial 
 signal p_trun, p_trun_reg :  p_trun_type;
 signal poly_mod_reg : p_trun_type;
 signal muldiv:  std_logic_vector(logq-1 downto 0);
+signal invert, invert_reg:  std_logic;
 
  signal i,j, counter, x, y, u, v : integer range 0 to 2*n;
-type STATE_TYPE is (inrN, inr1, finish);
+type STATE_TYPE is (init, inrN, inr1, finish);
 signal state        : STATE_TYPE;
 type time_type is (Idle, sum_cal,finishmul);
 signal timer       : time_type;
 type div_state_type is (Idle, mult, update, divfin);
 signal div_state       : div_state_type;
-signal poly_mod:    std_logic_vector(2*n-3 downto 0):= zero_n_4 & '1' & zero_n_2 & '1';
+signal poly_mod:    std_logic_vector(2*n-2 downto 0):= zero_n_3 & '1' & zero_n_2 & '1';
 begin
 addr<=addr_reg;
 read_mem<=read_mem_reg;
@@ -79,26 +70,33 @@ begin
 if rising_edge(clk) then
     if(rst='1') then
      addr_reg<=(others=>'0');
-     i<=base_addr_multipyer; j<=base_addr_multiplicand;
-     state<=inrN;
-     read_mem_reg<='0';
-     sdmux<="000";
-     mem_ctrl<="00";
+     state<=init;
     else
        case state is
+             when init =>       
+                    i<=base_addr_multipyer; j<=base_addr_multiplicand;
+                    state<=inrN;
+                    read_mem_reg<='0';
+                    sdmux<="000";
+                    mem_ctrl<="00";
+                    invert_reg<='0'; invert<='0';
              when inrN =>  
-              mem_ctrl<="10";
-              sdmux<="010";
-              read_mem_reg<='1';            
+               mem_ctrl<="10";
+                sdmux<="010";
+               read_mem_reg<='1';            
                addr_reg<=std_logic_vector(to_unsigned(i, 8));  
                state<=inr1;    
+               invert_reg<='0';
+               invert<=invert_reg;
              when inr1 =>
+              invert_reg<='1';
+              invert<=invert_reg;
               addr_reg<=std_logic_vector(to_unsigned(j, 8));
               --if(j=2*n-1) then
-              if(j=base_addr_a+n-1) then
-               j<=base_addr_a;
+              if(j=base_addr_multiplicand+n-1) then
+               j<=base_addr_multiplicand;
                i<=i+1;
-               if(i=base_addr_sk+n-1) then
+               if(i=base_addr_multipyer+n-1) then
                 state<=finish;
                else
                 state<=inrN;
@@ -110,7 +108,8 @@ if rising_edge(clk) then
              when finish=>
               mem_ctrl<="00";
               read_mem_reg<='0';
-              state<=finish;            
+              state<=finish;  
+              i<=base_addr_multipyer; j<=base_addr_multiplicand;          
        end case;
     end if;
 end if;
@@ -148,20 +147,26 @@ if rising_edge(clk) then
 end if;
 end process;
 --------------------------------------
-process(clk)--multiplication process
+process(clk, invert, mode)--multiplication process
 begin
 if rising_edge(clk) then
     if(rst='1') then
     timer<=Idle;
     mult_done<='0';
     p<=(others=>(others=>'0'));
+    not_p<=(others=>(others=>'0'));
     x<=0; y<=0;
     elsif(mul_start='1') then
      case timer is
       when Idle =>                
        timer<=sum_cal;
       when sum_cal =>  
+       if (invert='1') and mode="00" then
+         p(x+y)<=p(x+y)+a*(not mult_in +1); --two's complement is used to pass -a
+       else
          p(x+y)<=p(x+y)+a*mult_in;
+       end if;
+
         if(y=n-1) then
             x<=x+1;
             y<=0;
@@ -184,8 +189,9 @@ if rising_edge(clk) then
 end if;
 end process;
 --------------------------------------
-  truncate_loop : for I in 0 to 2*n-3 generate
-   p_trun(I)<='0'& p(I)(logq-1 downto 0);
+  truncate_loop : for I in 0 to 2*n-2 generate
+   --p_trun(I)<='0'& p(I)(logq-1 downto 0);
+   p_trun(2*n-2-I)<='0'& p(I)(logq-1 downto 0);
    end generate  truncate_loop;
 ----------------------------------------
 ----------------------------------------
@@ -194,7 +200,7 @@ end process;
 --   end generate  truncate_final_loop;
 ------------------------------------------
 ----------------------------------------
-process(clk, u ,v)--a stroing processs
+process(clk, rst, mult_done, u ,v)--axsk stroing processs
 begin
 if rising_edge(clk) then
     if(rst='1') then
@@ -208,11 +214,10 @@ if rising_edge(clk) then
          p_trun_reg<=p_trun;
          div_state<=mult;
          poly_mod_reg<=(others=>(others=>'0'));
-         
+         muldiv<=(others=>'0');
+         poly_mod<=zero_n_3 & '1' & zero_n_2 & '1';
        when mult=>
---          if(poly_mod(v)='1') then
---            poly_mod_reg(v)<=p_trun_reg(u);
---          end if;
+
             muldiv<=p_trun_reg(u)(logq-1 downto 0);
             div_state<=update;
           
@@ -222,20 +227,19 @@ if rising_edge(clk) then
          -- if(p_trun_reg(v)(logq-1 downto 0)>=muldiv) then --positive and zero
             p_trun_reg(v)(logq-1 downto 0)<= p_trun_reg(v)(logq-1 downto 0) -  muldiv;
             p_trun_reg(v)(logq)<='0';
-          --elsif(p_trun_reg(v)(logq-1 downto 0)<muldiv) then --negative 
-            --p_trun_reg(v)(logq-1 downto 0)<=muldiv- p_trun_reg(v)(logq-1 downto 0);
-            --p_trun_reg(v)(logq)<='0';
-         -- end if;
+
         end if;
          
-         if(v=2*n-3) then
+         --if(v=2*n-3) then
+         if(v=2*n-2) then
             u<=u+1;
             v<=u+1;
-            if(u=n-3) then
+            --if(u=n-3) then
+            if(u=n-2) then
                 div_state<=divfin;
             else
                 div_state<=mult;
-                poly_mod<=poly_mod(2*n-4 downto 0) & '0';
+                poly_mod<=poly_mod(2*n-3 downto 0) & '0';
             end if;
          else
           v<=v+1;
@@ -244,6 +248,7 @@ if rising_edge(clk) then
          
         when divfin=>
           div_done<='1';
+          muldiv<=(others=>'0');
           div_state<=divfin;
          
      end case;
@@ -251,8 +256,10 @@ if rising_edge(clk) then
 end if;
 end process;
 
-  output_loop : for I in n-2 to 2*n-3 generate
-   mult_out(I-(n-2))<=p_trun_reg(I)(logq -1 downto 0);
+  --output_loop : for I in n-2 to 2*n-3 generate
+  output_loop : for I in n-1 to 2*n-2 generate
+   --mult_out(I-(n-1))<=p_trun_reg(I)(logq -1 downto 0);
+   mult_out(2*n-2-I)<=p_trun_reg(I)(logq -1 downto 0);
    end generate  output_loop;
 
 done<=div_done;   
