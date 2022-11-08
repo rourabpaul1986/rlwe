@@ -5,32 +5,44 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use ieee.math_real.all;
 package rlwe_pkg is
 
-   constant n  : integer := 2**4;
-   constant q  : natural := 2**15;
-   constant t  : natural := 2**8;
-   constant base_addr_sk  : natural := 0;
-   constant base_addr_u  : natural := base_addr_sk+n;
-   constant base_addr_a  : natural := base_addr_u +n;
-   constant base_addr_e  : natural := base_addr_a +n;
-   constant base_addr_e1  : natural := base_addr_e +n;
-   constant base_addr_e2  : natural := base_addr_e1 +n;
-   constant logq : positive := positive(ceil(log2(real(q))));
-   constant logn : positive := positive(ceil(log2(real(n))));
-   constant init_key:   std_logic_vector(79 downto 0):=x"01234567890123456789";
-   constant init_iv:    std_logic_vector(79 downto 0):=x"01234567890123456789";
-   constant zero_n_2:    std_logic_vector(n-2 downto 0):=(others=>'0');
-   constant zero_n_4:    std_logic_vector(n-4 downto 0):=(others=>'0');
-   constant one_logq:    std_logic_vector(2*logq-2 downto 0):=(others=>'0');
-   
-   constant Ainit_key:   std_logic_vector(79 downto 0):=x"11234567890123456789";
-   constant Ainit_iv:    std_logic_vector(79 downto 0):=x"11234567890123456789";
-   
-   type a_type is array (0 to (n-1)) of std_logic_vector(n-1 downto 0);
+constant NUMBER_OF_INPUT_WORDS  : natural := 16;
+constant NUMBER_OF_OUTPUT_WORDS : natural := 32;
+constant C_M_AXIS_TDATA_WIDTH	: integer	:= 32;
+constant C_M_AXIS_START_COUNT    : integer    := 32;
+constant C_S_AXIS_TDATA_WIDTH    : integer    := 32;
+constant n  : integer := 2**4;
+constant q  : natural := 2**15;
+constant t  : natural := 2**8;
+--constant delta  : natural := q/t;
+constant base_addr_sk  : natural := 0;
+constant base_addr_u  : natural := base_addr_sk+n;--16
+constant base_addr_a  : natural := base_addr_u +n;--32
+--constant base_addr_e  : natural := base_addr_a +n;--48
+--constant base_addr_e1  : natural := base_addr_e +n;--64
+--constant base_addr_e2  : natural := base_addr_e1 +n;--80
+constant base_addr_b  : natural := base_addr_a +n;--48
+constant base_addr_ct0  : natural := base_addr_b +n;--64
+constant base_addr_ct1  : natural := base_addr_ct0 +n;--80
+constant logq : positive := positive(ceil(log2(real(q))));
+constant logn : positive := positive(ceil(log2(real(n))));
+constant logt : positive := positive(ceil(log2(real(t))));
+constant delta  : natural := logq-logt;
+constant init_key:   std_logic_vector(79 downto 0):=x"01234567890123456789";
+constant init_iv:    std_logic_vector(79 downto 0):=x"01234567890123456789";
+constant zero_n_2:    std_logic_vector(n-2 downto 0):=(others=>'0');
+constant zero_n_3:    std_logic_vector(n-3 downto 0):=(others=>'0');
+constant one_logq:    std_logic_vector(2*logq-2 downto 0):=(others=>'0');
 
-   type a_sk_type is array (0 to (n-1), 0 to (n-1)) of std_logic_vector(n-1 downto 0);
-   type p_type is array ( 0 to (2*n-2)) of std_logic_vector(2*logq+logq downto 0);
-   type p_trun_type is array ( 0 to (2*n-3)) of std_logic_vector(logq downto 0);--extra 1 bit for sign
-   type poly_mod_type is array ( 0 to (2*n-3)) of std_logic_vector(logq-1 downto 0);
-   type mult_type is array ( 0 to n-1) of std_logic_vector(logq downto 0);
+constant Ainit_key:   std_logic_vector(79 downto 0):=x"11234567890123456789";
+constant Ainit_iv:    std_logic_vector(79 downto 0):=x"11234567890123456789";
+
+type a_type is array (0 to (n-1)) of std_logic_vector(n-1 downto 0);
+
+type a_sk_type is array (0 to (n-1), 0 to (n-1)) of std_logic_vector(n-1 downto 0);
+type p_type is array ( 0 to (2*n-2)) of std_logic_vector(2*logq+logq downto 0);
+type p_trun_type is array ( 0 to (2*n-2)) of std_logic_vector(logq downto 0);--extra 1 bit for sign
+type poly_mod_type is array ( 0 to (2*n-3)) of std_logic_vector(logq-1 downto 0);
+type mult_type is array ( 0 to n-1) of std_logic_vector(logq-1 downto 0);
+type scaled_m_type is array ( 0 to n-1) of std_logic_vector(31 downto 0);
 
 end rlwe_pkg; 
