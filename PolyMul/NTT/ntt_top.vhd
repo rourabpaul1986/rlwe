@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------------------
 -- Company: 
--- Engineer: 
+-- Engineer: Dr. Rouab Paul
 -- 
 -- Create Date: 24.12.2022 11:08:07
 -- Design Name: 
@@ -78,7 +78,8 @@ if rising_edge(clk) then
               wm<=w_init;
               w<=1;
              when cal=>
-
+               --u<=to_integer(unsigned(A_rev(k+j))); --+ std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2)mod n))) mod w;
+              --t<=to_integer(unsigned(A_rev(k+j))); -- - std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2) mod n))) mod w;
             ----------------------------------------
               A_rev(k+j)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) + std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
                A_rev(k+j+m/2)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) - std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
