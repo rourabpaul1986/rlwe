@@ -1,11 +1,11 @@
 ----------------------------------------------------------------------------------
--- Company: 
+-- Company: Personal
 -- Engineer: Dr. Rouab Paul
 -- 
 -- Create Date: 24.12.2022 11:08:07
 -- Design Name: 
 -- Module Name: ntt_top - Behavioral
--- Project Name: 
+-- Project Name: Polynomial Multiplication
 -- Target Devices: 
 -- Tool Versions: 
 -- Description: 
@@ -80,16 +80,10 @@ if rising_edge(clk) then
               A_temp<=A_rev;
               done<='0';
              when cal=>
-               t<=(w*to_integer(unsigned(A_temp(k+j+m/2)))) mod q; --+ std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2)mod n))) mod w;
-               u<=to_integer(unsigned(A_temp(k+j))) mod q;
-               --u<=to_integer(unsigned(A_rev(k+j))); --+ std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2)mod n))) mod w;
-               --t<=to_integer(unsigned(A_rev(k+j))); -- - std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2) mod n))) mod w;
-            ----------------------------------------
-              --A_rev(k+j)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) + std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
-              --A_rev(k+j+m/2)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) - std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
-            ----------------------------------
-                 A_temp(k+j)<=std_logic_vector(to_unsigned(((w*to_integer(unsigned(A_temp(k+j+m/2))))+to_integer(unsigned(A_temp(k+j)))) mod q, logq));
-                 A_temp(k+j+m/2)<=std_logic_vector(to_unsigned((to_integer(unsigned(A_temp(k+j)))-(w*to_integer(unsigned(A_temp(k+j+m/2))))) mod q, logq));
+               --t<=(w*to_integer(unsigned(A_temp(k+j+m/2)))) mod q; --+ std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2)mod n))) mod w;
+               --u<=to_integer(unsigned(A_temp(k+j))) mod q;
+               A_temp(k+j)<=std_logic_vector(to_unsigned(((w*to_integer(unsigned(A_temp(k+j+m/2))))+to_integer(unsigned(A_temp(k+j)))) mod q, logq));
+               A_temp(k+j+m/2)<=std_logic_vector(to_unsigned((to_integer(unsigned(A_temp(k+j)))-(w*to_integer(unsigned(A_temp(k+j+m/2))))) mod q, logq));
              
                  -----------------
                 if k=n-m then
