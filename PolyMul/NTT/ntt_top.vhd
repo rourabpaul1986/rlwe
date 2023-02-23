@@ -44,12 +44,12 @@ entity ntt_top is
 end ntt_top;
 
 architecture Behavioral of ntt_top is
-signal A_rev : A_type;
+signal A_rev, A_temp : A_type;
 signal index : br_type;
 signal shift : br_type;
-type state_type is (idle, cal, condm,  finish);
+type state_type is (idle, cal,  finish);
 signal state        : state_type;
-signal m, j, k :integer range 0 to 2*n-1;
+signal m, counter, j, k :integer range 0 to 2*n-1;
 signal u, t :integer range 0 to 2*q;
 signal w, wm :integer range 0 to 2*q;
 
@@ -71,54 +71,55 @@ if rising_edge(clk) then
     else
        case state is
              when idle =>  
-              m<=2;
+              --m<=2;
               j<=0;
               k<=0;
               state<=cal;
               wm<=w_init;
               w<=1;
+              A_temp<=A_rev;
+              done<='0';
              when cal=>
+               t<=(w*to_integer(unsigned(A_temp(k+j+m/2)))) mod q; --+ std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2)mod n))) mod w;
+               u<=to_integer(unsigned(A_temp(k+j))) mod q;
                --u<=to_integer(unsigned(A_rev(k+j))); --+ std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2)mod n))) mod w;
-              --t<=to_integer(unsigned(A_rev(k+j))); -- - std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2) mod n))) mod w;
+               --t<=to_integer(unsigned(A_rev(k+j))); -- - std_logic_vector(to_unsigned(w, logq))*A_rev((k+j+m/2) mod n))) mod w;
             ----------------------------------------
-              A_rev(k+j)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) + std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
-               A_rev(k+j+m/2)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) - std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
+              --A_rev(k+j)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) + std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
+              --A_rev(k+j+m/2)<=std_logic_vector(to_unsigned(to_integer(unsigned(A_rev(k+j) - std_logic_vector(to_unsigned(w, logq))*A_rev(k+j+m/2))) mod w, logq));
             ----------------------------------
-
-  
-             state<=condm;
+                 A_temp(k+j)<=std_logic_vector(to_unsigned(((w*to_integer(unsigned(A_temp(k+j+m/2))))+to_integer(unsigned(A_temp(k+j)))) mod q, logq));
+                 A_temp(k+j+m/2)<=std_logic_vector(to_unsigned((to_integer(unsigned(A_temp(k+j)))-(w*to_integer(unsigned(A_temp(k+j+m/2))))) mod q, logq));
              
-              when condm=>
                  -----------------
-                 if m>n then
-                  state<=finish;
-                 else    
-                 ---------------              
-                  if j=(m/2) then
-                     m<=m*2;
-                     j<=0;
-                     k<=0;
-                  else
-                     ---------------               
-                      if k=n-m then -- 0 to n-1                     
-                         j<=j+1 ;
-                         k<=0;
-                      else                  
-                         k<=k+m;
-                      end if;
-                     ------------------
-                  end if;
-                  ----------------------
-                  state<=cal;
-                 end if;
+                if k=n-m then
+                  k<=0;
+                 else
+                  k<=k+m;
+                 end if;  
                  
-
-                
-              
+                 if m=2 then
+                   j<=0;
+                   --w<=w*wm;
+                 else
+                  if m=n and j = (n/2)-1 then
+                     state<=finish;
+                  elsif k=n-m and (counter mod (n/2)) /= 0 then
+                    j<=j+1;   w<=w*wm mod q;
+                     state<=cal;
+                  elsif  counter mod (n/2) = 0 and m/=n  then
+                    j<=0;  
+                    w<=1;
+                    state<=cal;               
+                 -- elsif m=n and j = (n/2)-1 then
+                      
+                  end if;
+                 end if;
               
                when finish=>
                 state<=finish;
-               
+                done<='1';
+               y<=A_temp;
               
         
               
@@ -127,4 +128,25 @@ if rising_edge(clk) then
  end if;
  end process;
 
+
+addr_gen1 : process(clk, rst)--generate address
+begin
+if rising_edge(clk) then
+    if(rst='1') and state=idle then
+     m<=2;
+     counter<=0;
+    else
+     if(counter=logn*n/2+1) then
+     elsif(counter mod (n/2)=0) and counter/=0 then
+      if m<n then
+      m<=m*2;
+      end if;
+      counter<=counter+1;
+     else
+      counter<=counter+1;
+     end if;
+    end if;
+end if;
+end process; 
+  
 end Behavioral;
